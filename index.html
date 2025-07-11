@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>あんスタ イベントスコア進捗ツール</title>
+    <script src="../lib/jquery-3.7.1.min.js"></script>
+    <script src="../lib/jquery.jqplot.js"></script>
+    <script src="../lib/jqplot.dateAxisRenderer.js"></script>
+    <script src="../lib/jqplot.canvasTextRenderer.js"></script>
+    <script src="../lib/jqplot.canvasAxisLabelRenderer.js"></script>
+    <script src="../lib/jqplot.cursor.js"></script>
+    <script src="../lib/jqplot.highlighter.js"></script>
+    <link rel="stylesheet" href="../lib/jquery.jqplot.min.css">
+    <link rel="stylesheet" href="styles.css">
+    <script src="script.js"></script>
+</head>
+<body>
+    <h1>あんスタ イベントスコア進捗ツール</h1>
+    <div class="container">
+        <div class="input-section">
+            <label>開始日:</label><input type="date" id="startDate">
+            <label>終了日:</label><input type="date" id="endDate">
+            <label>目標ポイント:</label><input type="number" id="targetPoints" min="0">
+            <button onclick="initializeGraph()">決定</button>
+            <button onclick="clearData()">クリア</button>
+        </div>
+        <div class="checkbox-section">
+            <label><input type="checkbox" id="showActual" checked> 実際の値</label>
+            <label><input type="checkbox" id="showPass" checked> パス込み</label>
+            <label><input type="checkbox" id="showTarget" checked> 目標値</label>
+        </div>
+        <div class="point-inputs" id="pointInputs">
+            <table>
+                <thead>
+                    <tr>
+                        <th>日付</th>
+                        <th>ポイント</th>
+                        <th>パス</th>
+                    </tr>
+                </thead>
+                <tbody id="inputTable"></tbody>
+            </table>
+        </div>
+        <div id="chart"></div>
+    </div>
+</body>
+</html>
