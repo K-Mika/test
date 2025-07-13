@@ -20,13 +20,24 @@
     <h1>あんスタ イベントスコア進捗ツール</h1>
     <div class="container">
         <div class="input-section">
-            <label>開始日:</label><input type="date" id="startDate">
-            &nbsp;～&nbsp;
-            <label>終了日:</label><input type="date" id="endDate">
-            &nbsp;&nbsp;
-            <label>目標ポイント:</label><input type="number" id="targetPoint" onblur="inputTargetPoint()" min="0">
+            <div class="date-inputs">
+                <div class="input-group">
+                    <label for="startDate">開始日:</label>
+                    <input type="date" id="startDate">
+                </div>
+                <span class="separator">～</span>
+                <div class="input-group">
+                    <label for="endDate">終了日:</label>
+                    <input type="date" id="endDate">
+                </div>
+                &emsp;
+                <div class="input-group">
+                    <label for="targetPoint">目標ポイント:</label>
+                    <input type="number" id="targetPoint" onblur="inputTargetPoint()" min="0">
+                </div>
+            </div>
         </div>
-        <div class="input-section">
+        <div class="input-section button-section">
             <button id="decision" onclick="decision()">決定</button>
             <button id="clear" onclick="clearData()">クリア</button>
         </div>
