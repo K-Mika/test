@@ -29,6 +29,7 @@ h1 {
 .input-section, .checkbox-section {
     margin-top: 30px;
     margin-bottom: 10px;
+    text-align: center;
 }
 
 .input-section label {
@@ -113,25 +114,24 @@ h1 {
     .container {
         padding: 15px;
     }
-
     h1 {
-        font-size: 20px;
+    font-size: 20px;
     }
 
     .input-section input[type="date"], .input-section input[type="number"] {
         width: 100%;
         margin-bottom: 10px;
     }
-
+    
     .input-section button {
         width: 100%;
         margin: 5px 0;
     }
-
+    
     .point-inputs input[type="number"] {
         width: 60px;
     }
-
+    
     #chart {
         height: 300px;
     }
