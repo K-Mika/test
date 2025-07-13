@@ -172,11 +172,9 @@ function drawGraph() {
                 rendererOptions: {
                     tickRenderer: $.jqplot.CanvasAxisTickRenderer
                 },
-                min: actualData[0][0],
-                max: actualData[actualData.length-1][0],
                 tickInterval: '1 day',
                 tickOptions: {
-                    formatString: '%m月%d日',
+                    formatString: '%#m月%#d日',
                     angle: -45
                 }
             },
@@ -219,7 +217,7 @@ function drawGraph() {
 
                     // ツールチップの中身を作成する
                     let content = '<table class="jqplot-highlighter" style="background-color:white;">';
-                    content = content + '<td colspan="2" style="text-align: center;">' + str.substring(0, 6) + '</td>';
+                    content = content + '<td colspan="2" style="text-align: center;">' + str.match(/\d{1,2}月\d{1,2}日/)  + '</td>';
 
                     if (target !== "null") {
                         content = content + `<tr><td>目標値:</td><td>${target}</td></tr>`;
@@ -411,12 +409,14 @@ function setDefaultDates() {
  */
 function formatDate(date, format) {
     let y = date.getFullYear();
-    let m = ('00' + (date.getMonth() +1 )).slice(-2);
-    let d = ("00" + date.getDate()).slice(-2);
+    let m = date.getMonth() + 1;
+    let d = date.getDate();
     let formatDate;
     if (typeof format === 'undefined') {
         formatDate = m + '月' + d + '日';
     } else {
+        m = ('00' + m ).slice(-2);
+        d = ("00" + d).slice(-2);
         formatDate = y + format + m + format + d;
     }
     return formatDate;
