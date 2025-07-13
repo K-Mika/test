@@ -1,257 +1,423 @@
+let startDate = '';
+let endDate = '';
+let targetPoint = '';
+let dates = [];
+let actualData = [];
+let passData = [];
+let targetData = [];
+let initData = [];
+
 $(document).ready(function() {
-    initializeDates();
-    loadSavedData();
-});
-
-function initializeDates() {
-    const today = new Date();
-    const year = today.getFullYear();
-    const month = today.getMonth();
-    const day = today.getDate();
-    let startDate, endDate;
-
-    // 開始日・終了日のロジック（クリア時にも再利用）
-    function setDefaultDates() {
-        if (day >= 1 && day <= 8) {
-            const lastDayOfLastMonth = new Date(year, month, 0);
-            startDate = formatDate(lastDayOfLastMonth);
-            endDate = formatDate(new Date(year, month, 8));
-        } else if (day >= 9 && day <= 23) {
-            startDate = formatDate(new Date(year, month, 15));
-            endDate = formatDate(new Date(year, month, 23));
-        } else {
-            const lastDayOfMonth = new Date(year, month + 1, 0);
-            startDate = formatDate(lastDayOfMonth);
-            endDate = formatDate(new Date(year, month + 1, 8));
-        }
-        return { startDate, endDate };
-    }
-
-    if (!localStorage.getItem('startDate') || !localStorage.getItem('endDate')) {
-        const dates = setDefaultDates();
-        $('#startDate').val(dates.startDate);
-        $('#endDate').val(dates.endDate);
-    } else {
+    // ローカルストレージの有無で初期表示を判定する
+    if (localStorage.getItem('startDate')) {
+        // ローカルストレージを元に復元する
         $('#startDate').val(localStorage.getItem('startDate'));
         $('#endDate').val(localStorage.getItem('endDate'));
-        $('#targetPoints').val(localStorage.getItem('targetPoints') || '');
+        $('#targetPoint').val(localStorage.getItem('targetPoint') || '');
+        
+        startDate = new Date(localStorage.getItem('startDate'));
+        endDate = new Date(localStorage.getItem('endDate'));
+        targetPoint = localStorage.getItem('targetPoint') || '';
+        
+        // 開始日終了日非活性
+        document.getElementById('startDate').disabled = true;
+        document.getElementById('endDate').disabled = true;
+        
+        // 決定ボタンを隠す
+        document.getElementById("decision").style.display = 'none';
+
+        // テーブルとグラフの作成
+        createTableGraph();
+    } else {
+        // 日付の初期値設定
+        setDefaultDates();
+        // クリアボタンを隠す
+        document.getElementById("clear").style.display = 'none';
     }
-}
+});
 
-function formatDate(date) {
-    return date.toISOString().split('T')[0];
-}
 
-function loadSavedData() {
-    if (localStorage.getItem('startDate') && localStorage.getItem('endDate')) {
-        initializeGraph();
-    }
-}
+/**
+ * @function 決定ボタン押下
+ */
+function decision() {
+    startDate = new Date($('#startDate').val());
+    endDate = new Date($('#endDate').val());
+    targetPoint = parseInt($('#targetPoint').val()) || 0;
 
-function initializeGraph() {
-    const startDate = new Date($('#startDate').val());
-    const endDate = new Date($('#endDate').val());
-    const targetPoints = parseInt($('#targetPoints').val()) || 0;
-
-    if (!startDate || !endDate || isNaN(targetPoints)) {
+    // 入力チェック
+    if (!startDate || !endDate || isNaN(targetPoint)) {
         alert('開始日、終了日、目標ポイントを正しく入力してください。');
         return;
     }
 
+    // ローカルストレージに保存
     localStorage.setItem('startDate', $('#startDate').val());
     localStorage.setItem('endDate', $('#endDate').val());
-    localStorage.setItem('targetPoints', targetPoints);
+    localStorage.setItem('targetPoint', targetPoint);
 
-    const dates = [];
+    // 開始日終了日非活性
+    document.getElementById('startDate').disabled = true;
+    document.getElementById('endDate').disabled = true;
+    
+    // 決定ボタンを隠す
+    document.getElementById("decision").style.display = 'none';
+    // クリアボタンを表示する
+    document.getElementById("clear").style.display = null;
+
+    // テーブルとグラフの作成
+    createTableGraph();
+}
+
+
+/**
+ * @function テーブルとグラフの作成
+ */
+function createTableGraph() {
+    // 開始日終了日から日付配列を作成
     let currentDate = new Date(startDate);
+    dates = [];
     while (currentDate <= endDate) {
-        dates.push(formatDate(new Date(currentDate)));
-        currentDate.setDate(currentDate.getDate() + 1);
+        dates.push(new Date(currentDate));
+        currentDate = new Date(currentDate.setDate(currentDate.getDate() + 1));
     }
 
+    // グラフデータの配列を作成
+    const period = dates.length;
+    const dailyTarget = targetPoint / period;
+
+    for (i=0; i<period; i++) {
+        const date = formatDate(dates[i], '-');
+        const points = parseInt(localStorage.getItem('point_' + i)) || 'null';
+        const pass = parseInt(localStorage.getItem('pass_' + i)) || 0;
+        actualData.push([date, points]);
+        passData.push([date, points !== 'null' ? (points + pass) : 'null']);
+        targetData.push([date, Math.round(dailyTarget * (i + 1))]);
+        initData.push([date, 0]);
+    }
+
+    // テーブルの作成
+    createTable();
+    // チェックボックス表示
+    $('.checkbox-section').show();
+    // グラフの作成
+    drawGraph();
+
+}
+
+/**
+ * @function テーブル作成
+ */
+function createTable() {
+    // 入力ポイントのテーブルを作成
     const tbody = $('#inputTable');
     tbody.empty();
-    dates.forEach(date => {
-        const savedPoints = localStorage.getItem(`points_${date}`) || '';
-        const savedPass = localStorage.getItem(`pass_${date}`) || '';
+    dates.forEach((date, index) => {
+        date = formatDate(date);
+        const savedPoints = localStorage.getItem(`point_${index}`) || '';
+        const savedPass = localStorage.getItem(`pass_${index}`) || '';
         tbody.append(`
             <tr>
                 <td>${date}</td>
-                <td><input type="number" class="point-input" data-date="${date}" value="${savedPoints}" min="0"></td>
-                <td><input type="number" class="pass-input" data-date="${date}" value="${savedPass}" min="0"></td>
+                <td><input type="number" name="point" class="point-input" value="${savedPoints}" min="0" onblur="inputPoint(${index})"></td>
+                <td><input type="number" name="pass" class="pass-input" value="${savedPass}" min="0" onblur="inputPass(${index})"></td>
             </tr>
         `);
     });
-
+    
+    // テーブル表示
     $('.point-inputs').show();
-    drawGraph();
-
-    $('.point-input, .pass-input').on('input', function() {
-        const date = $(this).data('date');
-        if ($(this).hasClass('point-input')) {
-            localStorage.setItem(`points_${date}`, $(this).val());
-        } else {
-            localStorage.setItem(`pass_${date}`, $(this).val());
-        }
-        drawGraph();
-    });
-
-    $('#showActual, #showPass, #showTarget').on('change', drawGraph);
 }
 
+
+/**
+ * @function グラフ作成
+ */
 function drawGraph() {
-    const startDate = new Date($('#startDate').val());
-    const endDate = new Date($('#endDate').val());
-    const targetPoints = parseInt($('#targetPoints').val()) || 0;
-    const dates = [];
-    let currentDate = new Date(startDate);
-    while (currentDate <= endDate) {
-        dates.push(formatDate(new Date(currentDate)));
-        currentDate.setDate(currentDate.getDate() + 1);
-    }
-
-    const days = dates.length;
-    const dailyTarget = targetPoints / days;
-
-    const actualData = [];
-    const passData = [];
-    const targetData = [];
-    dates.forEach((date, index) => {
-        const points = parseFloat(localStorage.getItem(`points_${date}`)) || null;
-        const pass = parseFloat(localStorage.getItem(`pass_${date}`)) || 0;
-        actualData.push([date, points]);
-        passData.push([date, points !== null ? (points + pass) : null]);
-        targetData.push([date, dailyTarget * (index + 1)]);
-    });
 
     $('#chart').empty();
     const plotData = [];
     const series = [];
 
-    if ($('#showActual').is(':checked')) {
-        plotData.push(actualData);
-        series.push({ label: '実際の値', color: '#ff6b81' });
-    }
-    if ($('#showPass').is(':checked')) {
-        plotData.push(passData);
-        series.push({ label: 'パス込み', color: '#6b7280', linePattern: 'dashed' });
-    }
+    
     if ($('#showTarget').is(':checked')) {
         plotData.push(targetData);
-        series.push({ label: '目標値', color: '#60a5fa' });
+        series.push({label: '目標値', color: '#60a5fa', shadow: false});
+    } else {
+        plotData.push(initData);
+        series.push({label: '目標値', color: '#60a5fa', shadow: false, showLine: false, showMarker: false} );
     }
 
-    if (plotData.length === 0) return;
+    if ($('#showPass').is(':checked')) {
+        plotData.push(passData);
+        series.push({label: 'パス値', color: '#6b7280', linePattern: 'dashed', shadow: false});
+    } else {
+        plotData.push(initData);
+        series.push({label: 'パス値', color: '#6b7280', linePattern: 'dashed', shadow: false, showLine: false, showMarker: false});
+    }
+    
+    if ($('#showActual').is(':checked')) {
+        plotData.push(actualData);
+        series.push({label: '現在値', color: '#ff6b81', shadow: false});
+    } else {
+        plotData.push(initData);
+        series.push({label: '現在値', color: '#ff6b81', shadow: false, showLine: false, showMarker: false});
+    }
 
-    $.jqplot('chart', plotData, {
+    let plot = $.jqplot('chart', plotData, {
         title: 'イベントスコア進捗',
         axes: {
             xaxis: {
                 renderer: $.jqplot.DateAxisRenderer,
-                tickOptions: { formatString: '%Y-%m-%d' },
-                min: startDate,
-                max: endDate,
-                tickInterval: '1 day'
+                rendererOptions: {
+                    tickRenderer: $.jqplot.CanvasAxisTickRenderer
+                },
+                min: actualData[0][0],
+                max: actualData[actualData.length-1][0],
+                tickInterval: '1 day',
+                tickOptions: {
+                    formatString: '%m月%d日',
+                    angle: -45
+                }
             },
             yaxis: {
-                label: 'ポイント',
-                labelRenderer: $.jqplot.CanvasAxisLabelRenderer,
                 min: 0
             }
+        },
+        seriesDefaults: {
+            markerOptions: {shadow: false}
         },
         series: series,
         legend: {
             show: true,
-            location: 'se',
-            placement: 'inside'
+            location: 'se'
         },
         highlighter: {
             show: true,
-            tooltipAxes: 'xy',
-            formatString: '<table class="jqplot-highlighter">' +
-                '<tr><td>日付:</td><td>%s</td></tr>' +
-                '<tr><td>実際の値:</td><td>%s</td></tr>' +
-                '<tr><td>パス込み:</td><td>%s</td></tr>' +
-                '<tr><td>目標値:</td><td>%s</td></tr>' +
-                '<tr><td>実際-目標:</td><td style="color:%s">%s</td></tr>' +
-                '<tr><td>パス込み-目標:</td><td style="color:%s">%s</td></tr></table>',
+            tooltipLocation: 'n',
             tooltipContentEditor: function(str, seriesIndex, pointIndex, plot) {
-                const date = plot.data[seriesIndex][pointIndex][0];
-                const actual = actualData[pointIndex][1] !== null ? actualData[pointIndex][1] : 'N/A';
-                const pass = passData[pointIndex][1] !== null ? passData[pointIndex][1] : 'N/A';
-                const target = targetData[pointIndex][1];
-                const diffActual = actual !== 'N/A' ? (actual - target).toFixed(2) : 'N/A';
-                const diffPass = pass !== 'N/A' ? (pass - target).toFixed(2) : 'N/A';
-                const colorActual = diffActual !== 'N/A' && diffActual < 0 ? 'red' : 'blue';
-                const colorPass = diffPass !== 'N/A' && diffPass < 0 ? 'red' : 'blue';
-                return '<table class="jqplot-highlighter">' +
-                    `<tr><td>日付:</td><td>${date}</td></tr>` +
-                    `<tr><td>実際の値:</td><td>${actual}</td></tr>` +
-                    `<tr><td>パス込み:</td><td>${pass}</td></tr>` +
-                    `<tr><td>目標値:</td><td>${target.toFixed(2)}</td></tr>` +
-                    `<tr><td>実際-目標:</td><td style="color:${colorActual}">${diffActual}</td></tr>` +
-                    `<tr><td>パス込み-目標:</td><td style="color:${colorPass}">${diffPass}</td></tr></table>`;
+
+                let content = "";
+                // 非表示グラフの場合、ツールチップの生成をしない
+                if (plot.series[seriesIndex].showLine) {
+                    // グラフが表示状態の時のみ値を代入する
+                    let target = "null";
+                    let pass = "null";
+                    let actual = "null";
+                    if (plot.series[0].showLine) {
+                        target = plot.data[0][pointIndex][1];
+                    }
+                    if (plot.series[2].showLine) {
+                        actual = plot.data[2][pointIndex][1];
+                    }
+                    if (plot.series[1].showLine) {
+                        // パスと実際の値が同じならパスの値は表示しない
+                        if (actual !== plot.data[1][pointIndex][1]) {
+                            pass = plot.data[1][pointIndex][1];
+                        }
+                    }
+
+                    // ツールチップの中身を作成する
+                    let content = '<table class="jqplot-highlighter" style="background-color:white;">';
+                    content = content + '<td colspan="2" style="text-align: center;">' + str.substring(0, 6) + '</td>';
+
+                    if (target !== "null") {
+                        content = content + `<tr><td>目標値:</td><td>${target}</td></tr>`;
+                    }
+                    if (actual !== "null") {
+                        content = content + `<tr><td>現在値:</td><td>${actual}</td></tr>`;
+                    }
+                    if (pass !== "null") {
+                        content = content + `<tr><td>パス値:</td><td>${pass}</td></tr>`;
+                    }
+                    // 差分を計算
+                    if (target !== "null" && actual !== "null") {
+                        const diffActual = actual - target;
+                        const colorActual = diffActual < 0 ? 'red' : 'blue';
+                        content = content + `<tr><td>現在差分:</td><td style="color:${colorActual}">${diffActual}</td></tr>`;
+                    }
+                    if (target !== "null" && pass !== "null") {
+                        const diffPass = pass - target;
+                        const colorPass = diffPass < 0 ? 'red' : 'blue';
+                        content = content + `<tr><td>パス差分:</td><td style="color:${colorPass}">${diffPass}</td></tr>`;
+                    }
+                    content = content + `</table>`;
+                    return content;
+                }
+
+                return content;
             }
-        },
-        cursor: { show: true }
+        }
     });
+    
+    // 再描画するとおかしいのなおる
+    plot.replot();
 }
 
+
+/**
+ * @function ポイント入力
+ * @param index
+ */
+function inputPoint(index) {
+    const point = document.getElementsByName("point")[index].value;
+    if (point) {
+        // ローカルストレージに保存
+        localStorage.setItem(`point_${index}`, point);
+        actualData[index][1] = parseInt(point);
+        
+        const pass = document.getElementsByName("pass")[index].value;
+        // パスの計算も一緒に行う
+        if (pass) {
+            passData[index][1] = parseInt(point) + parseInt(pass);
+        } else {
+            passData[index][1] = parseInt(point);
+        }
+    } else {
+        // ローカルストレージの除去とグラフのマッピングを削除
+        localStorage.removeItem(`point_${index}`);
+        actualData[index][1] = 'null';
+        passData[index][1] = 'null';
+    }
+    // グラフの描画
+    drawGraph();
+}
+
+/**
+ * @function パス入力
+ * @param index
+ */
+function inputPass(index) {
+    const pass = document.getElementsByName("pass")[index].value;
+    const point = document.getElementsByName("point")[index].value;
+    if (pass) {
+        // ローカルストレージに保存
+        localStorage.setItem(`pass_${index}`, pass);
+
+        // ポイントに入力がある場合のみ、グラフを描画する
+        if (point) {
+            passData[index][1] = parseInt(point) + parseInt(pass);
+        }
+    } else {
+        // ローカルストレージの除去とグラフのマッピングを削除
+        localStorage.removeItem(`pass_${index}`);
+        
+        // ポイントに値があればポイントの価に変更
+        if (point) {
+            passData[index][1] = parseInt(point);
+        } else {
+            passData[index][1] = 'null';
+        }
+    }
+    // グラフの描画
+    drawGraph();
+}
+
+/**
+ * @function 目標ポイント入力
+ */
+function inputTargetPoint() {
+    // ポイント入力欄がある場合のみグラフの再描画処理を行う
+    if ($('#pointInputs').css('display') !== 'none') {
+        const targetPoint = document.getElementById("targetPoint").value;
+        // ローカルストレージに保存
+        localStorage.setItem('targetPoint', targetPoint);
+
+        // グラフデータの配列を作成
+        const period = dates.length;
+        const dailyTarget = targetPoint / period;
+
+        for (i=0; i<period; i++) {
+            targetData[i][1] = Math.round(dailyTarget * (i + 1));
+        }
+
+        // グラフの描画
+        drawGraph();
+    }
+}
+
+
+/**
+ * @function 初期状態
+ */
 function clearData() {
     // 関連するローカルストレージのキーのみ削除
-    const startDate = new Date($('#startDate').val());
-    const endDate = new Date($('#endDate').val());
-    const dates = [];
-    let currentDate = new Date(startDate);
-    while (currentDate <= endDate) {
-        dates.push(formatDate(new Date(currentDate)));
-        currentDate.setDate(currentDate.getDate() + 1);
-    }
-
     // ポイントとパスのデータ削除
-    dates.forEach(date => {
-        localStorage.removeItem(`points_${date}`);
-        localStorage.removeItem(`pass_${date}`);
+    dates.forEach((actualData, index) => {
+        localStorage.removeItem(`point_${index}`);
+        localStorage.removeItem(`pass_${index}`);
     });
 
     // 開始日、終了日、目標ポイントの削除
     localStorage.removeItem('startDate');
     localStorage.removeItem('endDate');
-    localStorage.removeItem('targetPoints');
+    localStorage.removeItem('targetPoint');
 
     // 入力欄とグラフをリセット
-    $('#targetPoints').val('');
+    $('#targetPoint').val('');
     $('#inputTable').empty();
     $('.point-inputs').hide();
     $('#chart').empty();
-    $('#showActual').prop('checked', true);
-    $('#showPass').prop('checked', true);
-    $('#showTarget').prop('checked', true);
+    $('.checkbox-section').hide();
+    actualData = [];
+    passData = [];
+    targetData = [];
+    initData = [];
 
     // 開始日・終了日をデフォルト値に設定
+    setDefaultDates();
+    // 開始日終了日非活性
+    document.getElementById('startDate').disabled = false;
+    document.getElementById('endDate').disabled = false;
+    
+    // 決定ボタンを表示する
+    document.getElementById("decision").style.display = null;
+    // クリアボタンを隠す
+    document.getElementById("clear").style.display = 'none';
+}
+
+
+/**
+ * @function 日付初期値設定
+ */
+function setDefaultDates() {
     const today = new Date();
     const year = today.getFullYear();
     const month = today.getMonth();
     const day = today.getDate();
-    let startDateVal, endDateVal;
+    let start, end;
 
-    function setDefaultDates() {
-        if (day >= 1 && day <= 8) {
-            const lastDayOfLastMonth = new Date(year, month, 0);
-            startDateVal = formatDate(lastDayOfLastMonth);
-            endDateVal = formatDate(new Date(year, month, 8));
-        } else if (day >= 9 && day <= 23) {
-            startDateVal = formatDate(new Date(year, month, 15));
-            endDateVal = formatDate(new Date(year, month, 23));
-        } else {
-            const lastDayOfMonth = new Date(year, month + 1, 0);
-            startDateVal = formatDate(lastDayOfMonth);
-            endDateVal = formatDate(new Date(year, month + 1, 8));
-        }
-        return { startDate: startDateVal, endDate: endDateVal };
+    if (day >= 1 && day <= 8) {
+        const lastDayOfLastMonth = new Date(year, month, 0);
+        start = formatDate(lastDayOfLastMonth, '-');
+        end = formatDate(new Date(year, month, 8), '-');
+    } else if (day >= 9 && day <= 23) {
+        start = formatDate(new Date(year, month, 15), '-');
+        end = formatDate(new Date(year, month, 23), '-');
+    } else {
+        const lastDayOfMonth = new Date(year, month + 1, 0);
+        start = formatDate(lastDayOfMonth, '-');
+        end = formatDate(new Date(year, month + 1, 8), '-');
     }
+    $('#startDate').val(start);
+    $('#endDate').val(end);
+}
 
-    const datesReset = setDefaultDates();
-    $('#startDate').val(datesReset.startDate);
-    $('#endDate').val(datesReset.endDate);
+/**
+ * @function 日付フォーマット
+ * @param date 日付
+ * @param format フォーマット(指定なしでmm月dd日)
+ * @returns フォーマット日付
+ */
+function formatDate(date, format) {
+    let y = date.getFullYear();
+    let m = ('00' + (date.getMonth() +1 )).slice(-2);
+    let d = ("00" + date.getDate()).slice(-2);
+    let formatDate;
+    if (typeof format === 'undefined') {
+        formatDate = m + '月' + d + '日';
+    } else {
+        formatDate = y + format + m + format + d;
+    }
+    return formatDate;
 }
