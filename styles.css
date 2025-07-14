@@ -32,20 +32,35 @@ h1 {
     text-align: center;
 }
 
+/* 修正: フレックスボックスで垂直中央揃えを追加 */
+.input-section {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    align-items: center; /* 追加: 垂直方向で中央揃え */
+    gap: 10px;
+}
+
+/* 修正: ラベルの高さを入力欄と揃える */
 .input-section label {
     margin-right: 10px;
     font-weight: bold;
     color: #555;
+    line-height: 34px; /* 追加: 入力欄の高さ（パディング+ボーダー）と一致 */
 }
 
+/* 修正: 入力欄のスタイルを微調整 */
 .input-section input[type="date"], .input-section input[type="number"] {
     padding: 8px;
     border: 2px solid #ff9aa2;
     border-radius: 5px;
     font-size: 14px;
-    width: 120px
+    width: 120px;
+    box-sizing: border-box;
+    height: 34px; /* 追加: 高さを明示してラベルと揃える */
 }
 
+/* 修正: ボタンの高さを入力欄と揃える */
 .input-section button {
     background: #ff6b81;
     color: #fff;
@@ -57,10 +72,19 @@ h1 {
     transition: background 0.3s;
     margin-left: 10px;
     width: 100px;
+    height: 34px; /* 追加: 高さを入力欄と一致 */
 }
 
 .input-section button:hover {
     background: #ff4757;
+}
+
+/* 修正: <span>要素の垂直揃えを調整 */
+.input-section span {
+    display: inline-flex;
+    align-items: center;
+    padding: 0 5px;
+    line-height: 34px; /* 追加: ラベルや入力欄と高さを揃える */
 }
 
 .point-inputs {
@@ -89,6 +113,7 @@ h1 {
     padding: 5px;
     border: 2px solid #ffb3b3;
     border-radius: 5px;
+    box-sizing: border-box;
 }
 
 .checkbox-section {
@@ -100,7 +125,7 @@ h1 {
 
 #chart {
     height: 400px;
-    margin-top: 20px;
+    margin-top: 20px;
 }
 
 .jqplot-point-label {
@@ -114,18 +139,40 @@ h1 {
     .container {
         padding: 15px;
     }
+
     h1 {
-    font-size: 20px;
+        font-size: 20px;
+    }
+
+    .input-section {
+        flex-direction: column;
+        align-items: center;
     }
 
     .input-section input[type="date"], .input-section input[type="number"] {
         width: 100%;
+        max-width: 200px;
         margin-bottom: 10px;
+        margin-right: 0;
+        height: 34px; /* 追加: モバイルでも高さを保持 */
+    }
+
+    .input-section label {
+        margin-right: 0;
+        margin-bottom: 5px;
+        line-height: 1.5; /* 修正: モバイルでは高さをリセットし、自然な行高に */
     }
     
     .input-section button {
         width: 100%;
+        max-width: 200px;
         margin: 5px 0;
+        margin-left: 0;
+        height: 34px; /* 追加: モバイルでも高さを保持 */
+    }
+
+    .input-section span {
+        line-height: 1.5; /* 修正: モバイルでは高さをリセットし、自然な行高に */
     }
     
     .point-inputs input[type="number"] {
