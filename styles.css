@@ -1,18 +1,15 @@
 body {
     font-family: 'Arial', 'Hiragino Kaku Gothic Pro', sans-serif;
-    background: linear-gradient(135deg, #fce2e6, #e6f0fa);
-    color: #333;
-    margin: 0;
+    background: #eee2d3;
+    color: #957e85;
     padding: 20px;
     display: flex;
     flex-direction: column;
     align-items: center;
-    min-height: 100vh;
 }
 
 h1 {
-    color: #ff6b81;
-    text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.1);
+    color: #c39c89;
     font-size: 24px;
     margin-bottom: 20px;
 }
@@ -21,45 +18,68 @@ h1 {
     background: #fff;
     padding: 20px;
     border-radius: 15px;
-    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
     max-width: 800px;
     width: 100%;
 }
 
-.input-section, .checkbox-section {
+.input-section {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5em;
+    align-items: center;
+    margin-top: 30px;
+    margin-bottom: 10px;
+}
+
+.input-section label {
+    white-space: nowrap;
+    margin-right: 10px;
+    font-weight: bold;
+    color: #957e85;
+    text-align: left;
+}
+
+.input-pair {
+    display: inline-flex;
+    align-items: center;
+}
+
+.button-section {
     margin-top: 30px;
     margin-bottom: 10px;
     text-align: center;
 }
 
-.input-section label {
-    margin-right: 10px;
-    font-weight: bold;
-    color: #555;
+.checkbox-section {
+    margin-top: 30px;
+    margin-bottom: 10px;
+    text-align: center;
 }
+
+
 
 .input-section input[type="date"], .input-section input[type="number"] {
     padding: 8px;
-    border: 2px solid #ff9aa2;
+    border: 2px solid #efc3bd;
     border-radius: 5px;
     font-size: 14px;
 }
 
-.input-section button {
-    background: #ff6b81;
+.button-section button {
+    background: #c39c89;
     color: #fff;
     border: none;
-    padding: 10px 20px;
+    padding: 10px 80px;
     border-radius: 5px;
     cursor: pointer;
     font-size: 14px;
     transition: background 0.3s;
     margin-left: 10px;
-    width: 100px;
+
 }
 
-.input-section button:hover {
-    background: #ff4757;
+.button-section button:hover {
+    background: #efc3bd;
 }
 
 .point-inputs {
@@ -79,14 +99,14 @@ h1 {
 }
 
 .point-inputs th {
-    background: #ffcad4;
-    color: #333;
+    background: #e7b09f;
+    color: #fff;
 }
 
 .point-inputs input[type="number"] {
     width: 80px;
     padding: 5px;
-    border: 2px solid #ffb3b3;
+    border: 2px solid #efc3bd;
     border-radius: 5px;
 }
 
@@ -100,13 +120,13 @@ h1 {
 #chart {
     height: 400px;
     margin-top: 20px;
+    margin-right: 20px;
 }
 
 .jqplot-point-label {
     background: #fff;
     padding: 2px 5px;
     border-radius: 3px;
-    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
 }
 
 @media (max-width: 600px) {
@@ -118,17 +138,12 @@ h1 {
     }
 
     .input-section input[type="date"], .input-section input[type="number"] {
-        width: 100%;
         margin-bottom: 10px;
     }
     
-    .input-section button {
+    .button-section {
         width: 100%;
         margin: 5px 0;
-    }
-    
-    .point-inputs input[type="number"] {
-        width: 60px;
     }
     
     #chart {
