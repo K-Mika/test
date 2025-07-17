@@ -22,7 +22,9 @@
         <div class="input-section">
             <div class="input-pair">
                 <label>開始日:&ensp;<input type="date" id="startDate"></label>
-                <label>～&ensp;終了日:&ensp;<input type="date" id="endDate"></label>
+            </div>
+            <div class="input-pair">
+                <label>終了日:&ensp;<input type="date" id="endDate"></label>
             </div>
             <div class="input-pair">
                 <label>目標ポイント:&ensp;<input type="number" id="targetPoint" onblur="inputTargetPoint()" min="0"></label>
@@ -46,9 +48,21 @@
         </div>
         <div id="chart"></div>
         <div class="checkbox-section">
-            <label><input type="checkbox" onclick="drawGraph()" id="showActual" checked> 現在値</label>
-            <label><input type="checkbox" onclick="drawGraph()" id="showPass" checked> パス値</label>
-            <label><input type="checkbox" onclick="drawGraph()" id="showTarget" checked> 目標値</label>
+            <label>
+                <input type="checkbox" onclick="drawGraph()" id="showActual" checked>
+                <span class="color-box" style="background-color:#f2bcbc;"></span>
+                現在値
+            </label>
+            <label>
+                <input type="checkbox" onclick="drawGraph()" id="showPass" checked>
+                <span class="color-box" style="background-color:#a4d0ed;"></span>
+                パス値
+            </label>
+            <label>
+                <input type="checkbox" onclick="drawGraph()" id="showTarget" checked>
+                <span class="color-box" style="background-color:#c2d294;"></span>
+                目標値
+            </label>
         </div>
     </div>
 </body>
