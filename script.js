@@ -93,7 +93,7 @@ function createTableGraph() {
         actualData.push([date, points]);
         passData.push([date, points !== 'null' ? (points + pass) : 'null']);
         targetData.push([date, Math.round(dailyTarget * (i + 1))]);
-        initData.push([date, 0]);
+        initData.push([date, -1]);
     }
 
     // テーブルの作成
@@ -142,26 +142,26 @@ function drawGraph() {
     
     if ($('#showTarget').is(':checked')) {
         plotData.push(targetData);
-        series.push({label: '目標値', color: '#60a5fa', shadow: false});
+        series.push({label: '目標値', color: '#c2d294', shadow: false});
     } else {
         plotData.push(initData);
-        series.push({label: '目標値', color: '#60a5fa', shadow: false, showLine: false, showMarker: false} );
+        series.push({label: '目標値', color: '#c2d294', shadow: false, showLine: false, showMarker: false} );
     }
 
     if ($('#showPass').is(':checked')) {
         plotData.push(passData);
-        series.push({label: 'パス値', color: '#6b7280', linePattern: 'dashed', shadow: false});
+        series.push({label: 'パス値', color: '#a4d0ed', linePattern: 'dashed', shadow: false});
     } else {
         plotData.push(initData);
-        series.push({label: 'パス値', color: '#6b7280', linePattern: 'dashed', shadow: false, showLine: false, showMarker: false});
+        series.push({label: 'パス値', color: '#a4d0ed', linePattern: 'dashed', shadow: false, showLine: false, showMarker: false});
     }
     
     if ($('#showActual').is(':checked')) {
         plotData.push(actualData);
-        series.push({label: '現在値', color: '#ff6b81', shadow: false});
+        series.push({label: '現在値', color: '#f2bcbc', shadow: false});
     } else {
         plotData.push(initData);
-        series.push({label: '現在値', color: '#ff6b81', shadow: false, showLine: false, showMarker: false});
+        series.push({label: '現在値', color: '#f2bcbc', shadow: false, showLine: false, showMarker: false});
     }
 
     let plot = $.jqplot('chart', plotData, {
@@ -175,26 +175,34 @@ function drawGraph() {
                 tickInterval: '1 day',
                 tickOptions: {
                     formatString: '%#m月%#d日',
-                    angle: -45
-                }
+                    angle: -45,
+                    textColor: '#957e85'
+                },
+                label: '日付'
             },
             yaxis: {
-                min: 0
+                renderer: $.jqplot.canvasAxisLabelRenderer,
+                label: 'ポイント',
+                min: 0,
+                tickOptions: {
+                    textColor: '#957e85'
+                }
             }
         },
         seriesDefaults: {
             markerOptions: {shadow: false}
         },
         series: series,
-        legend: {
-            show: true,
-            location: 'se'
+        grid: {
+            shadow: false,
+            gridLineColor: '#d3b09e',
+            borderColor: '#c39c89'
         },
         highlighter: {
             show: true,
-            tooltipLocation: 'n',
+            tooltipLocation: 'nw',
+            tooltipOffset: -15,
             tooltipContentEditor: function(str, seriesIndex, pointIndex, plot) {
-
                 let content = "";
                 // 非表示グラフの場合、ツールチップの生成をしない
                 if (plot.series[seriesIndex].showLine) {
@@ -242,7 +250,6 @@ function drawGraph() {
                     content = content + `</table>`;
                     return content;
                 }
-
                 return content;
             }
         }
@@ -404,7 +411,7 @@ function setDefaultDates() {
 /**
  * @function 日付フォーマット
  * @param date 日付
- * @param format フォーマット(指定なしでmm月dd日)
+ * @param format フォーマット(指定なしでm月d日)
  * @returns フォーマット日付
  */
 function formatDate(date, format) {
