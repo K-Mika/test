@@ -1,5 +1,5 @@
 body {
-    font-family: 'Arial', 'Hiragino Kaku Gothic Pro', sans-serif;
+
     background: #eee2d3;
     color: #957e85;
     padding: 20px;
@@ -9,9 +9,13 @@ body {
 }
 
 h1 {
-    color: #c39c89;
+    color: #957e85;
     font-size: 24px;
     margin-bottom: 20px;
+}
+
+.jqplot-target div {
+    color: #957e85;
 }
 
 .container {
@@ -51,11 +55,27 @@ h1 {
 }
 
 .checkbox-section {
-    margin-top: 30px;
+    margin-top: 20px;
     margin-bottom: 10px;
     text-align: center;
+    display: flex;
+    justify-content: center;
+    gap: 20px;
+}
+.checkbox-section label {
+    display: inline-flex;
+    align-items: center;
+    margin-right: 10px;
+    gap: 5px;
+    font-size: 14px;
+    color: #555;
 }
 
+.color-box {
+    width: 15px;
+    height: 15px;
+    display: inline-block;
+}
 
 
 .input-section input[type="date"], .input-section input[type="number"] {
@@ -120,7 +140,6 @@ h1 {
 #chart {
     height: 400px;
     margin-top: 20px;
-    margin-right: 20px;
 }
 
 .jqplot-point-label {
