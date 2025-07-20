@@ -1,6 +1,3 @@
-let startDate = '';
-let endDate = '';
-let targetPoint = '';
 let dates = [];
 let actualData = [];
 let passData = [];
@@ -14,11 +11,7 @@ $(document).ready(function() {
         $('#startDate').val(localStorage.getItem('startDate'));
         $('#endDate').val(localStorage.getItem('endDate'));
         $('#targetPoint').val(localStorage.getItem('targetPoint') || '');
-        
-        startDate = new Date(localStorage.getItem('startDate'));
-        endDate = new Date(localStorage.getItem('endDate'));
-        targetPoint = localStorage.getItem('targetPoint') || '';
-        
+
         // 開始日終了日非活性
         document.getElementById('startDate').disabled = true;
         document.getElementById('endDate').disabled = true;
@@ -41,9 +34,9 @@ $(document).ready(function() {
  * @function 決定ボタン押下
  */
 function decision() {
-    startDate = new Date($('#startDate').val());
-    endDate = new Date($('#endDate').val());
-    targetPoint = parseInt($('#targetPoint').val()) || 0;
+    const startDate = new Date($('#startDate').val());
+    const endDate = new Date($('#endDate').val());
+    const targetPoint = parseInt($('#targetPoint').val()) || 0;
 
     // 入力チェック
     if (!startDate || !endDate || isNaN(targetPoint)) {
@@ -75,7 +68,8 @@ function decision() {
  */
 function createTableGraph() {
     // 開始日終了日から日付配列を作成
-    let currentDate = new Date(startDate);
+    let currentDate = new Date($('#startDate').val());
+    const endDate = new Date($('#endDate').val());
     dates = [];
     while (currentDate <= endDate) {
         dates.push(new Date(currentDate));
@@ -84,6 +78,7 @@ function createTableGraph() {
 
     // グラフデータの配列を作成
     const period = dates.length;
+    const targetPoint = parseInt($('#targetPoint').val()) || 0;
     const dailyTarget = targetPoint / period;
 
     for (i=0; i<period; i++) {
@@ -93,7 +88,7 @@ function createTableGraph() {
         actualData.push([date, points]);
         passData.push([date, points !== 'null' ? (points + pass) : 'null']);
         targetData.push([date, Math.round(dailyTarget * (i + 1))]);
-        initData.push([date, -1]);
+        initData.push([date, 0]);
     }
 
     // テーブルの作成
@@ -138,30 +133,27 @@ function drawGraph() {
     $('#chart').empty();
     const plotData = [];
     const series = [];
+    // グラフが全くないとおかしくなるのでダミーデータを準備
+//    plotData.push(initData);
+//    series.push({showLine: false, showMarker: false});
 
-    
     if ($('#showTarget').is(':checked')) {
         plotData.push(targetData);
         series.push({label: '目標値', color: '#c2d294', shadow: false});
     } else {
+        // グラフが全くないとおかしくなるのでダミーデータを準備
         plotData.push(initData);
-        series.push({label: '目標値', color: '#c2d294', shadow: false, showLine: false, showMarker: false} );
+        series.push({showLine: false, showMarker: false});
     }
 
     if ($('#showPass').is(':checked')) {
         plotData.push(passData);
-        series.push({label: 'パス値', color: '#a4d0ed', linePattern: 'dashed', shadow: false});
-    } else {
-        plotData.push(initData);
-        series.push({label: 'パス値', color: '#a4d0ed', linePattern: 'dashed', shadow: false, showLine: false, showMarker: false});
+        series.push({label: 'パス値', color: '#a4d0ed', shadow: false});
     }
     
     if ($('#showActual').is(':checked')) {
         plotData.push(actualData);
         series.push({label: '現在値', color: '#f2bcbc', shadow: false});
-    } else {
-        plotData.push(initData);
-        series.push({label: '現在値', color: '#f2bcbc', shadow: false, showLine: false, showMarker: false});
     }
 
     let plot = $.jqplot('chart', plotData, {
@@ -177,12 +169,9 @@ function drawGraph() {
                     formatString: '%#m月%#d日',
                     angle: -45,
                     textColor: '#957e85'
-                },
-                label: '日付'
+                }
             },
             yaxis: {
-                renderer: $.jqplot.canvasAxisLabelRenderer,
-                label: 'ポイント',
                 min: 0,
                 tickOptions: {
                     textColor: '#957e85'
@@ -200,56 +189,65 @@ function drawGraph() {
         },
         highlighter: {
             show: true,
-            tooltipLocation: 'nw',
-            tooltipOffset: -15,
+            tooltipLocation: 'n',
             tooltipContentEditor: function(str, seriesIndex, pointIndex, plot) {
-                let content = "";
-                // 非表示グラフの場合、ツールチップの生成をしない
-                if (plot.series[seriesIndex].showLine) {
-                    // グラフが表示状態の時のみ値を代入する
-                    let target = "null";
-                    let pass = "null";
-                    let actual = "null";
-                    if (plot.series[0].showLine) {
-                        target = plot.data[0][pointIndex][1];
-                    }
-                    if (plot.series[2].showLine) {
-                        actual = plot.data[2][pointIndex][1];
-                    }
-                    if (plot.series[1].showLine) {
-                        // パスと実際の値が同じならパスの値は表示しない
-                        if (actual !== plot.data[1][pointIndex][1]) {
-                            pass = plot.data[1][pointIndex][1];
-                        }
-                    }
-
-                    // ツールチップの中身を作成する
-                    let content = '<table class="jqplot-highlighter" style="background-color:white;">';
-                    content = content + '<td colspan="2" style="text-align: center;">' + str.match(/\d{1,2}月\d{1,2}日/)  + '</td>';
-
-                    if (target !== "null") {
-                        content = content + `<tr><td>目標値:</td><td>${target}</td></tr>`;
-                    }
-                    if (actual !== "null") {
-                        content = content + `<tr><td>現在値:</td><td>${actual}</td></tr>`;
-                    }
-                    if (pass !== "null") {
-                        content = content + `<tr><td>パス値:</td><td>${pass}</td></tr>`;
-                    }
-                    // 差分を計算
-                    if (target !== "null" && actual !== "null") {
-                        const diffActual = actual - target;
-                        const colorActual = diffActual < 0 ? 'red' : 'blue';
-                        content = content + `<tr><td>現在差分:</td><td style="color:${colorActual}">${diffActual}</td></tr>`;
-                    }
-                    if (target !== "null" && pass !== "null") {
-                        const diffPass = pass - target;
-                        const colorPass = diffPass < 0 ? 'red' : 'blue';
-                        content = content + `<tr><td>パス差分:</td><td style="color:${colorPass}">${diffPass}</td></tr>`;
-                    }
-                    content = content + `</table>`;
-                    return content;
+            
+                if (seriesIndex === 0 && !($('#showTarget').is(':checked'))) {
+                    return "";
                 }
+                // ツールチップの位置を調整する
+                if (pointIndex < 1) {
+                    plot.plugins.highlighter.tooltipLocation = "ne";
+                } else if (pointIndex < dates.length - 1) {
+                    plot.plugins.highlighter.tooltipLocation = "n";
+                } else {
+                    plot.plugins.highlighter.tooltipLocation = "nw";
+                }
+
+                // 初期化
+                let target = "null";
+                let pass = "null";
+                let actual = "null";
+                plot.data.forEach((date, index) => {
+                    if (plot.series[index].label == "目標値") {
+                        target = date[pointIndex][1];
+                    } else  if (plot.series[index].label == "現在値") {
+                        actual = date[pointIndex][1];
+                        // パスと実際の値が同じならパスの値は表示しない
+                        if (actual === pass) {
+                            pass = "null";
+                        }
+                    } else if (plot.series[index].label == "パス値") {
+                        pass = date[pointIndex][1];
+                    }
+                });
+                
+                // ツールチップの中身を作成する
+                let content = '<table class="jqplot-highlighter" style="background-color:white;">';
+                content = content + '<td colspan="2" style="text-align: center;">' + str.match(/\d{1,2}月\d{1,2}日/)  + '</td>';
+
+                if (target !== "null") {
+                    content = content + `<tr><td>目標値:</td><td>${target}</td></tr>`;
+                }
+                if (actual !== "null") {
+                    content = content + `<tr><td>現在値:</td><td>${actual}</td></tr>`;
+                }
+                if (pass !== "null") {
+                    content = content + `<tr><td>パス値:</td><td>${pass}</td></tr>`;
+                }
+                // 差分を計算
+                if (target !== "null" && actual !== "null") {
+                    const diffActual = actual - target;
+                    const colorActual = diffActual < 0 ? 'red' : 'blue';
+                    content = content + `<tr><td>現在差分:</td><td style="color:${colorActual}">${diffActual}</td></tr>`;
+                }
+                if (target !== "null" && pass !== "null") {
+                    const diffPass = pass - target;
+                    const colorPass = diffPass < 0 ? 'red' : 'blue';
+                    content = content + `<tr><td>パス差分:</td><td style="color:${colorPass}">${diffPass}</td></tr>`;
+                }
+                content = content + `</table>`;
+                
                 return content;
             }
         }
@@ -283,6 +281,9 @@ function inputPoint(index) {
         localStorage.removeItem(`point_${index}`);
         actualData[index][1] = 'null';
         passData[index][1] = 'null';
+        // 一つ目の配列の場合、値がおかしくなる場合があるため、0を代入する
+//        if () {
+//        }
     }
     // グラフの描画
     drawGraph();
@@ -306,8 +307,8 @@ function inputPass(index) {
     } else {
         // ローカルストレージの除去とグラフのマッピングを削除
         localStorage.removeItem(`pass_${index}`);
-        
-        // ポイントに値があればポイントの価に変更
+
+        // ポイントに値があればポイントの値に変更
         if (point) {
             passData[index][1] = parseInt(point);
         } else {
@@ -343,7 +344,7 @@ function inputTargetPoint() {
 
 
 /**
- * @function 初期状態
+ * @function クリア処理
  */
 function clearData() {
     // 関連するローカルストレージのキーのみ削除
