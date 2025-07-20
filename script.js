@@ -195,14 +195,6 @@ function drawGraph() {
                 if (seriesIndex === 0 && !($('#showTarget').is(':checked'))) {
                     return "";
                 }
-                // ツールチップの位置を調整する
-                if (pointIndex < 1) {
-                    plot.plugins.highlighter.tooltipLocation = "ne";
-                } else if (pointIndex < dates.length - 1) {
-                    plot.plugins.highlighter.tooltipLocation = "n";
-                } else {
-                    plot.plugins.highlighter.tooltipLocation = "nw";
-                }
 
                 // 初期化
                 let target = "null";
