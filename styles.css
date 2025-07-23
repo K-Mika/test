@@ -83,6 +83,23 @@ h1 {
     border: 2px solid #efc3bd;
     border-radius: 5px;
     font-size: 14px;
+    width: 110px
+}
+
+.input-pair button {
+    background: #c39c89;
+    color: #fff;
+    border: none;
+    padding: 7px 10px;
+    border-radius: 5px;
+    cursor: pointer;
+    font-size: 14px;
+    transition: background 0.3s;
+    margin-left: 10px;
+}
+
+.input-pair button:hover {
+    background: #efc3bd;
 }
 
 .button-section button {
@@ -95,7 +112,6 @@ h1 {
     font-size: 14px;
     transition: background 0.3s;
     margin-left: 10px;
-
 }
 
 .button-section button:hover {
@@ -148,6 +164,45 @@ h1 {
     padding: 2px 5px;
     border-radius: 3px;
 }
+
+        /* ダイアログのコンテンツ部にスクロールバーを追加 */
+        .dialog-content {
+            max-height: 400px; /* 必要に応じて調整 */
+            overflow-x: auto;
+            overflow-y: auto;
+            position: relative; /* ヘッダ固定用 */
+        }
+        /* テーブル全体の幅を固定 */
+        .dialog-table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+        /* テーブルのヘッダを固定 */
+        .dialog-table thead {
+            position: sticky;
+            top: 0;
+            background-color: #f5f5f5; /* ヘッダの背景色 */
+            z-index: 1; /* コンテンツより手前に */
+        }
+        /* テーブルのセルに固定幅を設定 */
+        .dialog-table th, .dialog-table td {
+            border: 1px solid #ddd;
+            padding: 5px;
+            text-align: left;
+            white-space: nowrap; /* テキスト折り返しを防ぐ */
+        }
+        /* 選択された行の背景色 */
+        .dialog-table tr.selected {
+            background-color: #e0f7fa;
+        }
+        /* 選択可能な行にカーソルをポインターに */
+        .dialog-table tr.selectable {
+            cursor: pointer;
+        }
+        /* 右上の×ボタンを非表示 */
+        .ui-dialog-titlebar-close {
+            display: none;
+        }
 
 @media (max-width: 600px) {
     .container {
