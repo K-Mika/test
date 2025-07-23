@@ -5,6 +5,8 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>あんスタ イベント進捗ツール</title>
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script src="https://code.jquery.com/ui/1.12.1/jquery-ui.min.js"></script>
+    <link rel="stylesheet" href="https://code.jquery.com/ui/1.12.1/themes/base/jquery-ui.css">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jqPlot/1.0.9/jquery.jqplot.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jqPlot/1.0.9/plugins/jqplot.dateAxisRenderer.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jqPlot/1.0.9/plugins/jqplot.canvasTextRenderer.min.js"></script>
@@ -28,6 +30,7 @@
             </div>
             <div class="input-pair">
                 <label>目標pt:&ensp;<input type="number" id="targetPoint" onblur="inputTargetPoint()" min="0"></label>
+                <button id="openDialog">報酬一覧</button>
             </div>
         </div>
         <div class="button-section">
@@ -63,6 +66,22 @@
                 <span class="color-box" style="background-color:#c2d294;"></span>
                 目標値
             </label>
+        </div>
+        <!-- ダイアログのHTML（初期は非表示） -->
+        <div id="dialog" title="改修中機能だよ（とりあえず動く）" style="display:none;">
+            <div class="dialog-content">
+                <table class="dialog-table">
+                    <thead>
+                        <tr>
+                            <th>報酬</th>
+                            <th>ポイント</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <!-- 動的に挿入される -->
+                    </tbody>
+                </table>
+            </div>
         </div>
     </div>
 </body>
