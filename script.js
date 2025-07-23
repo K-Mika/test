@@ -4,6 +4,91 @@ let passData = [];
 let targetData = [];
 let initData = [];
 
+// サンプルデータ
+const dialogData = [
+    {name: "☆4:1枚", detail: 1000000},
+    {name: "MVピース", detail: 1250000},
+    {name: "クラウンメダル", detail: 1300000},
+    {name: "☆4:2枚", detail: 2400000},
+    {name: "☆4:3枚", detail: 3300000},
+    {name: "☆5:1枚", detail: 3500000},
+    {name: "☆4:4枚", detail: 5000000},
+    {name: "☆5:2枚", detail: 7500000},
+    {name: "☆4:完凸", detail: 10200000},
+    {name: "☆5:3枚", detail: 11000000},
+    {name: "☆5:4枚", detail: 15000000},
+    {name: "☆5:完凸", detail: 22000000}
+];
+
+$(function() {
+    // ダイアログの初期化
+    $("#dialog").dialog({
+        autoOpen: false,
+        width: $(window).width() > 600 ? 400 : "90%", // スマホでは90%幅
+        modal: true,
+        buttons: [
+            {
+                text: "決定",
+                click: function() {
+                    // 選択された行のデータを取得
+                    const selectedRow = $(".dialog-table tr.selected");
+                    if (selectedRow.length > 0) {
+                        const detail = selectedRow.find("td:eq(1)").text();
+                        // 親画面に値を渡す
+                        document.getElementById("targetPoint").value = detail;
+                    }
+                    $(this).dialog("close");
+                    // グラフの再描画
+                    inputTargetPoint();
+                }
+            },
+            {
+                text: "キャンセル",
+                click: function() {
+                    $(this).dialog("close");
+                }
+            }
+            
+        ],
+        open: function() {
+            // ダイアログオープン時にテーブル内容を動的に生成
+            const $tbody = $(".dialog-table tbody").empty();
+            $.each(dialogData, function(index, item) {
+                const $row = $(`
+                    <tr class="selectable" data-id="${index}">
+                        <td>${item.name}</td>
+                        <td>${item.detail}</td>
+                    </tr>
+                `);
+                $tbody.append($row);
+            });
+
+            // 行クリックで選択処理
+            $(".dialog-table tr.selectable").off("click").on("click", function(e) {
+                e.preventDefault(); // タッチ時の意図しない動作を防止
+                // すべての行からselectedクラスを削除
+                $(".dialog-table tr").removeClass("selected");
+                // クリックした行にselectedクラスを追加
+                $(this).addClass("selected");
+            });
+        }
+    });
+
+    // ダイアログを開くボタンのクリックイベント
+    $("#openDialog").on("click", function() {
+        $("#dialog").dialog("open");
+    });
+
+    // ウィンドウリサイズ時にダイアログの幅を調整
+    $(window).on("resize", function() {
+        if ($("#dialog").dialog("isOpen")) {
+            $("#dialog").dialog("option", "width", $(window).width() > 600 ? 400 : "90%");
+            $("#dialog").dialog("option", "position", { my: "center", at: "center", of: window });
+        }
+    });
+});
+
+
 $(document).ready(function() {
     // ローカルストレージの有無で初期表示を判定する
     if (localStorage.getItem('startDate')) {
@@ -133,9 +218,6 @@ function drawGraph() {
     $('#chart').empty();
     const plotData = [];
     const series = [];
-    // グラフが全くないとおかしくなるのでダミーデータを準備
-//    plotData.push(initData);
-//    series.push({showLine: false, showMarker: false});
 
     if ($('#showTarget').is(':checked')) {
         plotData.push(targetData);
@@ -194,6 +276,14 @@ function drawGraph() {
             
                 if (seriesIndex === 0 && !($('#showTarget').is(':checked'))) {
                     return "";
+                }
+                // ツールチップの位置を調整する
+                if (pointIndex < 1) {
+                    plot.plugins.highlighter.tooltipLocation = "ne";
+                } else if (pointIndex < dates.length - 1) {
+                    plot.plugins.highlighter.tooltipLocation = "n";
+                } else {
+                    plot.plugins.highlighter.tooltipLocation = "nw";
                 }
 
                 // 初期化
@@ -273,9 +363,6 @@ function inputPoint(index) {
         localStorage.removeItem(`point_${index}`);
         actualData[index][1] = 'null';
         passData[index][1] = 'null';
-        // 一つ目の配列の場合、値がおかしくなる場合があるため、0を代入する
-//        if () {
-//        }
     }
     // グラフの描画
     drawGraph();
